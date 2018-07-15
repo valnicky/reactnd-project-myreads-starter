@@ -3,8 +3,9 @@ import PropTypes from 'prop-types'
 import { Link }  from 'react-router-dom'
 import Book from './Book'
 import * as BooksAPI from './BooksAPI'
+import debounce from 'lodash.debounce'
 
-class Search extends Component {
+class Search extends React.Component {
 	state = {
 		query: '',
 		queryResults: []
@@ -27,6 +28,16 @@ class Search extends Component {
 			})
  		this.setState({query})
  	}
+
+ 	 constructor(props) {
+	    super(props);
+	    this.handleChange = this.handleChange.bind(this);
+	    this.emitChangeDebounced = debounce(this.emitChange, 250);
+	}
+
+  componentWillUnmount() {
+    this.emitChangeDebounced.cancel();
+  }
 
 	render() {
 		const { shelfChange } = this.props;
@@ -56,6 +67,12 @@ class Search extends Component {
                   		))}
 	    	  		</ol>
 	   			</div>
+	   			<input
+		        type="text"
+		        onChange={this.handleChange}
+		        placeholder="Search..."
+		        defaultValue={this.props.value}
+		      />
    			</div>
 		)
 	}
@@ -63,6 +80,14 @@ class Search extends Component {
 	  static propTypes = {
     	shelfChange: PropTypes.func.isRequired
   	}
+
+  	 handleChange(e) {
+    this.emitChangeDebounced(e.target.value);
+  }
+
+  emitChange(value) {
+    this.props.onChange(value);
+  }
 }
 
 export default Search;
